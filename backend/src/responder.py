@@ -1,105 +1,110 @@
-import requests
-import re
 import os
+import re
+import requests
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# ------------------ CONFIG ------------------
 load_dotenv()
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral:instruct")
+TIMEOUT = 60
 
-# Paths relative to project root
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 PROMPTS_DIR = os.path.join(PROJECT_ROOT, "prompts")
 
-def load_prompt_file(filename):
-    path = os.path.join(PROMPTS_DIR, filename)
-    if not os.path.isfile(path):
-        print(f"Arquivo não encontrado: {os.path.abspath(path)}")
-        return ""
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read().strip()
+# ------------------ SRP: FileLoader ------------------
+class FileLoader:
+    @staticmethod
+    def load(filename):
+        path = os.path.join(PROMPTS_DIR, filename)
+        if not os.path.isfile(path):
+            print(f"[FileLoader] Arquivo não encontrado: {os.path.abspath(path)}")
+            return ""
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read().strip()
 
-# Load prompts
-PROMPT_INITIAL = load_prompt_file("prompt_initial.txt")
-PRODUCTIVE_MESSAGE = load_prompt_file("productive_message.txt")
-UNPRODUCTIVE_MESSAGE = load_prompt_file("unproductive_message.txt")
-MESSAGE_ERROR_IA = load_prompt_file("message_error_ia.txt")
-PROMPT_SUPPORT = load_prompt_file("prompt_support.txt")
-FILTER_SUPPORT = load_prompt_file("filter_support.txt")
 
-# Generate list of support keywords from filter file
-SUPPORT_KEYWORDS = [line.strip().lower() for line in FILTER_SUPPORT.splitlines() if line.strip()]
+# ------------------ SRP: OllamaClient ------------------
+class OllamaClient:
+    def __init__(self, url=OLLAMA_URL, model=OLLAMA_MODEL, timeout=TIMEOUT):
+        self.url = url
+        self.model = model
+        self.timeout = timeout
 
-def client_requested_support(text):
-    """Returns True if the client requested support or contact channels in the text."""
-    text_lower = text.lower()
-    return any(word in text_lower for word in SUPPORT_KEYWORDS)
+    def generate(self, prompt: str, temperature=0.5, num_predict=200) -> str:
+        try:
+            response = requests.post(
+                self.url,
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {"temperature": temperature, "num_predict": num_predict}
+                },
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            return response.json().get("response", "").strip()
+        except requests.RequestException as e:
+            raise RuntimeError(f"Erro na requisição IA: {e}")
 
-def clean_response(raw_text):
-    """Removes tags, placeholders, fictitious names/positions, signatures, and brackets."""
-    cleaned = re.sub(r'<.*?>', '', raw_text, flags=re.DOTALL)
-    cleaned = re.sub(r'\[.*?\]|\{.*?\}|\(.*?\)', '', cleaned)
-    cleaned = re.sub(
-        r'(?i)(atenciosamente|cordialmente|equipe financeira|equipe de atendimento|suporte financeiro|empresa xyz|nome da empresa|função|cargo).*', 
-        '', cleaned
-    )
-    lines = [line.strip() for line in cleaned.split('\n') if line.strip()]
-    if not lines:
-        return ""
-    full_text = '\n'.join(lines)
-    if len(full_text) > 1200:
-        full_text = full_text[:1200] + "..."
-    return full_text
 
-def generate_response(text, category):
-    """
-    Generates automatic response using Ollama AI,
-    always in the context of customer service for the financial department.
-    Returns an AI response + default response + support message, separated by commas.
-    If an error occurs, adds the error message to the final output.
-    """
-    # Build the full prompt including the client email text
-    prompt = f"{PROMPT_INITIAL}\nE-mail do cliente:\n{text}\nResposta:"
-
-    ia_response = ""
-    error_message = ""
-
-    try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": False,
-                "options": {"temperature": 0.5, "num_predict": 200}
-            },
-            timeout=60
+# ------------------ SRP: TextCleaner ------------------
+class TextCleaner:
+    @staticmethod
+    def clean(text: str, max_length=1200) -> str:
+        cleaned = re.sub(r'<.*?>', '', text, flags=re.DOTALL)
+        cleaned = re.sub(r'\[.*?\]|\{.*?\}|\(.*?\)', '', cleaned)
+        cleaned = re.sub(
+            r'(?i)(atenciosamente|cordialmente|equipe financeira|equipe de atendimento|suporte financeiro|empresa xyz|nome da empresa|função|cargo).*',
+            '', cleaned
         )
-        if response.status_code == 200:
-            raw = response.json().get("response", "").strip()
-            ia_response = clean_response(raw)
+        lines = [line.strip() for line in cleaned.split('\n') if line.strip()]
+        full_text = '\n'.join(lines)
+        return (full_text[:max_length] + "...") if len(full_text) > max_length else full_text
+
+
+# ------------------ SRP: SupportDetector ------------------
+class SupportDetector:
+    def __init__(self, keywords):
+        self.keywords = [k.lower() for k in keywords]
+
+    def requested(self, text):
+        text_lower = text.lower()
+        return any(keyword in text_lower for keyword in self.keywords)
+
+
+# ------------------ SRP: Responder ------------------
+class EmailResponder:
+    def __init__(self, client: OllamaClient, prompts: dict, support_detector: SupportDetector):
+        self.client = client
+        self.prompts = prompts
+        self.support_detector = support_detector
+
+    def respond(self, text: str, category: str) -> str:
+        prompt = f"{self.prompts['initial']}\nE-mail do cliente:\n{text}\nResposta:"
+        try:
+            raw_response = self.client.generate(prompt)
+            ia_response = TextCleaner.clean(raw_response)
+        except Exception as e:
+            print(f"[EmailResponder] Erro IA: {e}")
+            ia_response = self.prompts['error_ia']
+            error_message = str(e)
         else:
-            error_message = f"Erro na requisição à IA: código {response.status_code}"
-    except Exception as e:
-        print(f"Erro IA resposta: {e}")
-        error_message = f"Erro ao conectar à IA: {str(e)}"
+            error_message = None
 
-    if category == 'produtivo':
-        default_response = PRODUCTIVE_MESSAGE or "Agradecemos seu contato! Sua solicitação foi recebida pelo setor financeiro e será analisada. Em breve retornaremos com mais informações."
-    else:
-        default_response = UNPRODUCTIVE_MESSAGE or "Agradecemos sua mensagem! Se precisar de suporte financeiro, estamos à disposição em nossos canais oficiais."
+        default_msg = (
+            self.prompts['productive'] if category == 'produtivo'
+            else self.prompts['unproductive']
+        )
 
-    if not ia_response:
-        ia_response = MESSAGE_ERROR_IA or "(Não foi possível gerar resposta automática pela IA)"
+        responses = [ia_response or self.prompts['error_ia'], default_msg]
 
-    responses = [ia_response, default_response]
+        if self.support_detector.requested(text) and self.prompts.get('support'):
+            responses.append(self.prompts['support'])
 
-    if client_requested_support(text) and PROMPT_SUPPORT:
-        responses.append(PROMPT_SUPPORT)
+        if error_message:
+            responses.append(f"Erro: {error_message}")
 
-    if error_message:
-        responses.append(f"Erro: {error_message}")
-
-    return ", ".join(responses)
+        return ", ".join(responses)
