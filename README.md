@@ -69,6 +69,11 @@ No diretório `backend/`:
 
 ```sh
 python app.py
+
+or
+
+python backend/app.py
+
 ```
 
 O backend Flask rodará por padrão em `http://localhost:5000/`.
