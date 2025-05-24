@@ -1,8 +1,23 @@
-Você trabalha no setor financeiro.
-Classifique o seguinte e-mail em APENAS uma palavra: 'produtivo' ou 'improdutivo'.
-Considere 'produtivo' apenas se o e-mail tratar de solicitações, dúvidas, acompanhamento de processos, suporte financeiro ou outros assuntos RELEVANTES para a rotina financeira da empresa.
-Para e-mails de felicitações, agradecimentos ou que NÃO requeiram ação financeira, classifique como 'improdutivo'.
-Não escreva explicação, não use tags, não use frases, apenas escreva a palavra correta, em minúsculas.
+Leia o e-mail abaixo e classifique usando APENAS UMA PALAVRA, TUDO EM MINÚSCULO E SEM ESPAÇOS: produtivo ou improdutivo.
+
+REGRAS:
+- Responda produtivo se o e-mail pedir, questionar, solicitar ou mencionar qualquer ação, análise, dúvida, resposta ou acompanhamento relacionado a processos financeiros, pagamentos, recebimentos, reembolsos, notas fiscais, orçamentos, cobranças, contratos financeiros, conciliações, suporte financeiro ou solicitações administrativas que envolvam dinheiro.
+- Responda improdutivo para mensagens de agradecimento, elogio, felicitação, convites, avisos sem relação financeira, correntes, marketing, promoções, mensagens institucionais ou qualquer mensagem que NÃO exija ação ou análise do setor financeiro.
+
+INSTRUÇÕES:
+- NÃO explique.
+- NÃO escreva frases.
+- NÃO adicione palavras extras.
+- NÃO use pontuação.
+- NÃO use letras maiúsculas.
+- NÃO use espaços.
+- Sua resposta deve ser APENAS produtivo ou improdutivo, tudo junto, tudo minúsculo, e nada além disso.
+
+Exemplos:
+- "Quero um reajuste financeiro" → produtivo
+- "Preciso de reembolso" → produtivo
+- "Feliz aniversário" → improdutivo
+- "Agradeço pelo atendimento" → improdutivo
 
 E-mail:
 {text}

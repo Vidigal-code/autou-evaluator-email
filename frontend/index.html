@@ -6,26 +6,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link id="theme-style" rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1>Classificador de E-mails AutoU - Setor Financeiro</h1>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema">🌙</button>
-    </div>
-    <form id="emailForm" class="card" autocomplete="off">
-        <textarea name="text" id="text" placeholder="Cole aqui o texto do e-mail" aria-label="Texto do e-mail"></textarea>
-        <div class="form-row">
-            <label class="file-label" tabindex="0" for="file">
-                📎 Anexar .pdf ou .txt
-                <input type="file" id="file" accept=".pdf,.txt" aria-label="Arquivo de e-mail">
-            </label>
-            <span id="filePreview" class="file-preview"></span>
+<body data-theme="light">
+    <div class="container">
+        <div class="header">
+            <h1>Classificador de E-mails AutoU</h1>
+            <p>Setor Financeiro</p>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema">🌙</button>
         </div>
-        <button type="submit">Enviar</button>
-    </form>
-    <div id="loading" style="display:none;"><span>⏳</span> Processando...</div>
-    <div id="result"></div>
-</div>
+        <form id="emailForm" class="card" autocomplete="off" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label" for="text">Texto do E-mail</label>
+                <textarea 
+                    name="text" 
+                    id="text" 
+                    placeholder="Cole aqui o conteúdo completo do e-mail para classificação automática..."
+                    aria-label="Texto do e-mail"
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Anexar Arquivo</label>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="file-upload-icon">📎</div>
+                    <div class="file-upload-text">Clique para selecionar ou arraste aqui</div>
+                    <div class="file-upload-subtext">Arquivos suportados: PDF, TXT</div>
+                    <input type="file" id="file" name="file" accept=".pdf,.txt" aria-label="Arquivo de e-mail" style="display:none;">
+                </div>
+                <div id="filePreview" class="file-preview"></div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Classificar E-mail
+            </button>
+        </form>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            Processando classificação...
+        </div>
+
+        <div id="result" class="card result"></div>
+    </div>
 <script src="main.js"></script>
 </body>
 </html>

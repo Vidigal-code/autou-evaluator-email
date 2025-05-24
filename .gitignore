@@ -1,7 +1,10 @@
+
+.pytest_cache
 backend/src/__pycache__/
 backend/__pycache__/
 backend/*.py[cod]
 backend/*$py.class
+backend/tests/__pycache__/
 
 backend/env/
 backend/venv/
@@ -16,6 +19,7 @@ backend/.eggs/
 
 backend/pip-log.txt
 backend/pip-delete-this-directory.txt
+
 backend/htmlcov/
 backend/.tox/
 backend/.coverage
@@ -42,3 +46,5 @@ out/
 
 .DS_Store
 Thumbs.db
+
+backend/.env

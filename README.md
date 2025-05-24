@@ -49,12 +49,16 @@ Este projeto é uma solução prática para classificação automática de e-mai
 
 ```
 backend/
-   requirements.txt
+  requirements.txt
   app.py
+  .env
   src/
     classifier.py
     responder.py
     utils.py
+  tests/
+   test_classifier.py
+   test_responder.py
     
 frontend/
   index.html
@@ -63,7 +67,22 @@ frontend/
 README.md
 ```
 
-### 3. Rodando o backend
+### 3. Configuração do arquivo `.env`
+
+O backend utiliza variáveis de ambiente para configurar a integração com o Ollama.  
+**Crie um arquivo chamado `.env` na raiz do projeto (ou dentro da pasta `backend/` se desejar) com o seguinte conteúdo:**
+
+```env
+OLLAMA_URL=http://localhost:11434/api/generate
+OLLAMA_MODEL=mistral:instruct
+```
+
+- `OLLAMA_URL`: Endereço local da API do Ollama (padrão para instalação local).
+- `OLLAMA_MODEL`: Nome do modelo baixado no Ollama.
+
+Se quiser usar outro modelo ou um servidor Ollama remoto, basta alterar esses valores no `.env`, sem necessidade de alterar o código.
+
+### 4. Rodando o backend
 
 No diretório `backend/`:
 
@@ -73,7 +92,7 @@ python app.py
 
 O backend Flask rodará por padrão em `http://localhost:5000/`.
 
-### 4. Rodando o frontend
+### 5. Rodando o frontend
 
 Acesse `http://localhost:5000/` no navegador.
 
@@ -114,16 +133,85 @@ werkzeug
 pdfplumber
 nltk
 requests
+python-dotenv
+pytest
 ```
 
 ---
+
+## 🧪 Testes automatizados com pytest
+
+O projeto já vem com testes automatizados utilizando o [pytest](https://docs.pytest.org/) para garantir a qualidade e o funcionamento dos principais módulos do backend.
+
+### Como rodar os testes
+
+1. Certifique-se de que as dependências estão instaladas:
+   ```
+   pip install -r backend/requirements.txt
+   ```
+
+2. Navegue até a pasta do backend:
+   ```
+   cd backend
+   ```
+
+3. Execute o pytest:
+   ```
+   pytest
+   ```
+
+   Você verá uma saída parecida com:
+   ```
+   collected 3 items
+
+   tests/test_classifier.py ..                                                                                      [ 66%]
+   tests/test_responder.py .                                                                                        [100%]
+
+   ================================================== 3 passed in 0.87s ==================================================
+   ```
+
+   - Os pontos `.` indicam testes que passaram.
+   - O progresso (`[ 66%]`, `[100%]`) mostra o andamento da execução.
+   - Se todos os testes passaram, está tudo certo!
+
+### Estrutura dos testes
+
+- Os testes estão no diretório `backend/tests/`.
+- Cada arquivo testa um módulo específico, por exemplo:
+  - `test_classifier.py` testa a classificação de e-mails.
+  - `test_responder.py` testa a limpeza e preparação de respostas automáticas.
+
+### Observações sobre dependências externas
+
+- Os testes de classificação dependem do Ollama estar rodando e do modelo carregado. Para garantir testes consistentes e independentes, recomenda-se utilizar mocks nas funções que fazem chamadas externas (exemplo no próprio código de teste).
+- Se algum teste falhar, verifique se o Ollama está ativo e o modelo correto está disponível, ou utilize mocks conforme exemplo comentado nos arquivos de teste.
+
+### Mais informações
+
+- Para saber mais sobre pytest, consulte [a documentação oficial](https://docs.pytest.org/).
+
+---
+
 ## 📹 Vídeo Demonstrativo
 
 Confira o vídeo demonstrativo:
 
-- [Youtube](https://www.youtube.com/watch?v=QMO2L-pq_X4&ab_channel=KauanVidigal)
+- [Youtube - 1](https://www.youtube.com/watch?v=QMO2L-pq_X4&ab_channel=KauanVidigal)
+- [Youtube - 2](https://www.youtube.com/watch?v=bMJZEQ9ocEU)
 
+---
 
+## 🗂️ Exemplos de arquivos `.env`
+
+```env
+# Exemplo de .env para rodar localmente
+OLLAMA_URL=http://localhost:11434/api/generate
+OLLAMA_MODEL=mistral:instruct
+```
+
+> **Dica:** Nunca suba o arquivo `.env` para repositórios públicos!
+
+---
 
 ## 🤝 Contato
 

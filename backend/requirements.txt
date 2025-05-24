@@ -4,3 +4,5 @@ werkzeug
 pdfplumber
 nltk
 requests
+python-dotenv
+pytest

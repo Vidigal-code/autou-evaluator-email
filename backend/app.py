@@ -4,7 +4,6 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
-# Imports dos módulos internos (ajuste o caminho se necessário)
 from src.classifier import classify_email
 from src.responder import generate_response
 from src.utils import extract_text_from_file, clean_text
@@ -15,6 +14,7 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'uploads')
     ALLOWED_EXTENSIONS = {'pdf', 'txt'}
     FRONTEND_FOLDER = os.path.join(BASE_DIR, '..', 'frontend')
+    MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2 MB
 
 # -------------- UTILITÁRIOS -------------------
 def allowed_file(filename):
@@ -42,7 +42,6 @@ def extract_input_text(request):
             try:
                 text = extract_text_from_file(file_path)
             finally:
-                # Remove o arquivo após processamento
                 try:
                     os.remove(file_path)
                 except OSError:
@@ -61,7 +60,6 @@ def extract_input_text(request):
 def generate_result(text):
     """
     Executa todo o processamento: classificação e resposta automática.
-    Retorna dicionário com categoria, resposta e texto processado (legível).
     """
     if not text or not text.strip():
         raise ValueError('Texto vazio ou arquivo sem conteúdo')
@@ -71,9 +69,7 @@ def generate_result(text):
     except Exception as e:
         print(f"Erro ao gerar resposta: {str(e)}")
         resposta = "Erro ao gerar resposta automática. Por favor, tente novamente."
-    # Agora, texto_processado é o texto original, apenas limitado a 200 caracteres
     texto_processado = text[:200] + "..." if len(text) > 200 else text
-
     return {
         'categoria': categoria,
         'resposta': resposta,
@@ -82,26 +78,20 @@ def generate_result(text):
 
 # -------------- FLASK APP ---------------------
 def create_app(config_class=Config):
-    """Cria a aplicação Flask com CORS e registra rotas."""
     app = Flask(__name__, static_folder=config_class.FRONTEND_FOLDER, static_url_path='')
     app.config.from_object(config_class)
+    app.config['MAX_CONTENT_LENGTH'] = config_class.MAX_CONTENT_LENGTH
     CORS(app)
     register_routes(app)
     return app
 
 def register_routes(app):
-    """Define as rotas da aplicação."""
-
     @app.route('/')
     def serve_index():
-        # Serve o arquivo index.html do frontend
         return send_from_directory(app.static_folder, 'index.html')
 
     @app.route('/process', methods=['POST'])
     def process_email():
-        """
-        Endpoint principal: recebe texto ou arquivo, processa e retorna resultado.
-        """
         try:
             text = extract_input_text(request)
             result = generate_result(text)
@@ -115,15 +105,11 @@ def register_routes(app):
 
     @app.route('/<path:path>', methods=['GET'])
     def static_proxy(path):
-        """
-        Serve arquivos estáticos do frontend (JS, CSS, imagens, etc).
-        """
         try:
             return send_from_directory(app.static_folder, path)
         except FileNotFoundError:
             return jsonify({'error': 'Arquivo não encontrado'}), 404
 
-# -------------- EXECUÇÃO ----------------------
 if __name__ == '__main__':
     app = create_app()
     os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
