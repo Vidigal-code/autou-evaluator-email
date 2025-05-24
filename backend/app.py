@@ -8,8 +8,7 @@ from src.classifier import classify_email
 from src.responder import generate_response
 from src.utils import extract_text_from_file, clean_text
 
-
-# ---------------------- CONFIG ----------------------
+# -------------- CONFIGURAÇÕES -----------------
 class Config:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'uploads')
@@ -17,75 +16,67 @@ class Config:
     FRONTEND_FOLDER = os.path.join(BASE_DIR, '..', 'frontend')
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2 MB
 
+# -------------- UTILITÁRIOS -------------------
+def allowed_file(filename):
+    """Verifica se o arquivo tem extensão permitida."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
-# ------------------ FILE HANDLING -------------------
-class FileService:
-    @staticmethod
-    def allowed_file(filename):
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+def save_uploaded_file(file_storage, upload_folder):
+    """Salva o arquivo enviado para a pasta de uploads."""
+    filename = secure_filename(file_storage.filename)
+    file_path = os.path.join(upload_folder, filename)
+    os.makedirs(upload_folder, exist_ok=True)
+    file_storage.save(file_path)
+    return file_path
 
-    @staticmethod
-    def save(file_storage):
-        filename = secure_filename(file_storage.filename)
-        file_path = os.path.join(Config.UPLOAD_FOLDER, filename)
-        os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
-        file_storage.save(file_path)
-        return file_path
-
-    @staticmethod
-    def extract_text(file_storage):
-        if not FileService.allowed_file(file_storage.filename):
-            raise ValueError("Arquivo não suportado. Use apenas PDF ou TXT.")
-
-        file_path = FileService.save(file_storage)
-        try:
-            text = extract_text_from_file(file_path)
-        finally:
+def extract_input_text(request):
+    """
+    Extrai o texto do arquivo enviado ou do campo 'text'.
+    Dá prioridade ao arquivo, se enviado.
+    """
+    # Se for upload de arquivo
+    if 'file' in request.files:
+        file = request.files['file']
+        if file and file.filename != '' and allowed_file(file.filename):
+            file_path = save_uploaded_file(file, Config.UPLOAD_FOLDER)
             try:
-                os.remove(file_path)
-            except OSError:
-                pass
+                text = extract_text_from_file(file_path)
+            finally:
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+            if not text or not text.strip():
+                raise ValueError('O arquivo enviado está vazio ou não pôde ser lido.')
+            return text
+        elif file and file.filename != '':
+            raise ValueError('Arquivo não suportado. Use apenas PDF ou TXT.')
+    # Se for texto simples via formulário/JSON
+    text = request.form.get('text') or (request.json.get('text') if request.is_json else None)
+    if not text or not text.strip():
+        raise ValueError('Nenhum texto ou arquivo válido enviado')
+    return text
 
-        if not text or not text.strip():
-            raise ValueError("O arquivo está vazio ou ilegível.")
+def generate_result(text):
+    """
+    Executa todo o processamento: classificação e resposta automática.
+    """
+    if not text or not text.strip():
+        raise ValueError('Texto vazio ou arquivo sem conteúdo')
+    categoria = classify_email(text)
+    try:
+        resposta = generate_response(text, categoria)
+    except Exception as e:
+        print(f"Erro ao gerar resposta: {str(e)}")
+        resposta = "Erro ao gerar resposta automática. Por favor, tente novamente."
+    texto_processado = text[:200] + "..." if len(text) > 200 else text
+    return {
+        'categoria': categoria,
+        'resposta': resposta,
+        'texto_processado': texto_processado
+    }
 
-        return text
-
-
-# ------------------ PROCESSING SERVICE -------------------
-class EmailProcessor:
-    @staticmethod
-    def get_text_from_request(req):
-        if 'file' in req.files and req.files['file'].filename != '':
-            return FileService.extract_text(req.files['file'])
-
-        text = req.form.get('text') or (req.json.get('text') if req.is_json else None)
-        if not text or not text.strip():
-            raise ValueError('Nenhum texto ou arquivo válido enviado.')
-        return text
-
-    @staticmethod
-    def process(text):
-        if not text or not text.strip():
-            raise ValueError('Texto vazio ou arquivo sem conteúdo.')
-
-        categoria = classify_email(text)
-        try:
-            resposta = generate_response(text, categoria)
-        except Exception as e:
-            print(f"Erro ao gerar resposta: {str(e)}")
-            resposta = "Erro ao gerar resposta automática. Por favor, tente novamente."
-
-        texto_processado = text[:200] + "..." if len(text) > 200 else text
-
-        return {
-            'categoria': categoria,
-            'resposta': resposta,
-            'texto_processado': texto_processado
-        }
-
-
-# ------------------ FLASK APP FACTORY -------------------
+# -------------- FLASK APP ---------------------
 def create_app(config_class=Config):
     app = Flask(__name__, static_folder=config_class.FRONTEND_FOLDER, static_url_path='')
     app.config.from_object(config_class)
@@ -94,8 +85,6 @@ def create_app(config_class=Config):
     register_routes(app)
     return app
 
-
-# ------------------ ROUTES -------------------
 def register_routes(app):
     @app.route('/')
     def serve_index():
@@ -104,8 +93,8 @@ def register_routes(app):
     @app.route('/process', methods=['POST'])
     def process_email():
         try:
-            text = EmailProcessor.get_text_from_request(request)
-            result = EmailProcessor.process(text)
+            text = extract_input_text(request)
+            result = generate_result(text)
             return jsonify(result)
         except ValueError as ve:
             return jsonify({'error': str(ve)}), 400
@@ -121,8 +110,6 @@ def register_routes(app):
         except FileNotFoundError:
             return jsonify({'error': 'Arquivo não encontrado'}), 404
 
-
-# ------------------ MAIN -------------------
 if __name__ == '__main__':
     app = create_app()
     os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
