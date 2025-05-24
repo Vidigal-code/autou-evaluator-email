@@ -19,12 +19,26 @@ Este projeto é uma solução prática para classificação automática de e-mai
 ## 📸 Demonstração (Workflow)
 
 1. **Acesse a interface web**.
-2. Faça upload de um `.txt` ou `.pdf` de e-mail **ou cole o texto**.
+2. Faça upload de um arquivo `.txt` ou `.pdf` de e-mail **ou cole o texto** diretamente.
 3. Clique em **Enviar**.
-4. Veja:
-   - **Categoria:** _Produtivo_ ou _Improdutivo_
-   - **Resposta sugerida:** Pronta para copiar/usar
-   - **Prévia do texto processado**
+4. Veja os resultados:
+
+   * **Categoria:** *Produtivo* ou *Improdutivo*
+   * **Resposta sugerida:** pronta para copiar/usar
+   * **Prévia do texto processado**
+5. Exemplo de imagem:
+
+<div style="text-align: center;">
+  <p><strong>Categoria:</strong> Produtivo</p>
+  <img src="https://github.com/Vidigal-code/autou-evaluator-email/blob/main/example/productive.png?raw=true" alt="Produtivo" />
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+  <p><strong>Categoria:</strong> Improdutivo</p>
+  <img src="https://github.com/Vidigal-code/autou-evaluator-email/blob/main/example/unproductive.png?raw=true" alt="Improdutivo" />
+</div>
+
+
 
 ---
 
