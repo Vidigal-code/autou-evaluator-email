@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Classificador de E-mails AutoU - Setor Financeiro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link id="theme-style" rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Classificador de E-mails AutoU - Setor Financeiro</h1>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema">🌙</button>
+    </div>
+    <form id="emailForm" class="card" autocomplete="off">
+        <textarea name="text" id="text" placeholder="Cole aqui o texto do e-mail" aria-label="Texto do e-mail"></textarea>
+        <div class="form-row">
+            <label class="file-label" tabindex="0" for="file">
+                📎 Anexar .pdf ou .txt
+                <input type="file" id="file" accept=".pdf,.txt" aria-label="Arquivo de e-mail">
+            </label>
+            <span id="filePreview" class="file-preview"></span>
+        </div>
+        <button type="submit">Enviar</button>
+    </form>
+    <div id="loading" style="display:none;"><span>⏳</span> Processando...</div>
+    <div id="result"></div>
+</div>
+<script src="main.js"></script>
+</body>
+</html>

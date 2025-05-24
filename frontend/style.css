@@ -1,0 +1,214 @@
+:root {
+    --color-bg: #f6f7fb;
+    --color-card: #f1f1f4;
+    --color-text: #1b1e23;
+    --color-btn: #1976d2;
+    --color-btn-hover: #145a99;
+    --color-success: #2e7d32;
+    --color-warning: #b85c00;
+    --color-badge-prod: #e0f7fa;
+    --color-badge-prod-border: #48a999;
+    --color-badge-imp: #ffe4b3;
+    --color-badge-imp-border: #ffc266;
+    --color-error-bg: #ffd8d8;
+    --color-error-text: #c70000;
+    --color-processed: #eaeaea;
+    --color-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    --transition: background 0.25s, color 0.25s, border 0.25s;
+}
+[data-theme="dark"] {
+    --color-bg: #14171a;
+    --color-card: #23272b;
+    --color-text: #f1f5fa;
+    --color-btn: #2196f3;
+    --color-btn-hover: #1769aa;
+    --color-success: #7fffa3;
+    --color-warning: #ffc266;
+    --color-badge-prod: #1e3a34;
+    --color-badge-prod-border: #48a999;
+    --color-badge-imp: #4e3910;
+    --color-badge-imp-border: #ffc266;
+    --color-error-bg: #351010;
+    --color-error-text: #ff8686;
+    --color-processed: #313134;
+    --color-shadow: 0 2px 24px rgba(0,0,0,0.30);
+}
+
+html, body {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: var(--transition);
+}
+
+.container {
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 18px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.7em;
+    cursor: pointer;
+    color: var(--color-text);
+    transition: color 0.2s;
+}
+
+.card {
+    background: var(--color-card);
+    border-radius: 13px;
+    box-shadow: var(--color-shadow);
+    padding: 24px 20px 20px 20px;
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    transition: var(--transition);
+}
+
+textarea {
+    min-height: 110px;
+    resize: vertical;
+    font-size: 1em;
+    border-radius: 8px;
+    border: 1.5px solid #bbb;
+    padding: 10px;
+    background: inherit;
+    color: inherit;
+    transition: border-color 0.2s;
+}
+
+textarea:focus {
+    border-color: var(--color-btn);
+    outline: none;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+input[type="file"] {
+    display: none;
+    flex: 1 1 auto;
+}
+
+.file-preview {
+    font-size: 0.93em;
+    color: #888;
+}
+
+button[type="submit"] {
+    width: 140px;
+    padding: 11px 0;
+    font-weight: bold;
+    background: var(--color-btn);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    margin-top: 8px;
+    align-self: flex-start;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+button[type="submit"]:hover {
+    background: var(--color-btn-hover);
+}
+
+#loading {
+    margin-top: 10px;
+    color: #888;
+    font-weight: bold;
+}
+
+#result {
+    margin-top: 20px;
+    display: none;
+}
+
+.success {
+    color: var(--color-success);
+    font-weight: bold;
+}
+.warning {
+    color: var(--color-warning);
+    font-weight: bold;
+}
+.result-container {
+    background: var(--color-card);
+    border-radius: 13px;
+    box-shadow: var(--color-shadow);
+    padding: 24px 20px 20px 20px;
+    transition: var(--transition);
+}
+.result-section {
+    margin-bottom: 16px;
+}
+.badge {
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    margin-left: 8px;
+    display: inline-block;
+}
+.badge.success {
+    background: var(--color-badge-prod);
+    border: 1px solid var(--color-badge-prod-border);
+    color: var(--color-success);
+}
+.badge.warning {
+    background: var(--color-badge-imp);
+    border: 1px solid var(--color-badge-imp-border);
+    color: var(--color-warning);
+}
+.error-container {
+    background: var(--color-error-bg);
+    color: var(--color-error-text);
+    padding: 10px;
+    border-radius: 8px;
+}
+.processed-text {
+    font-size: 12px;
+    color: #bbb;
+    background: var(--color-processed);
+    padding: 7px;
+    border-radius: 5px;
+    word-break: break-all;
+}
+
+@media (max-width: 700px) {
+    .container {
+        padding: 5px;
+        margin: 0;
+    }
+    .header {
+        flex-direction: column;
+        gap: 2px;
+    }
+    .card, .result-container {
+        padding: 12px 6px 8px 6px;
+    }
+    button[type="submit"] {
+        width: 100%;
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 420px) {
+    h1 { font-size: 1.1em; }
+}
