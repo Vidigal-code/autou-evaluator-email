@@ -350,7 +350,10 @@ class EmailFormApp {
 
   attachEventListeners() {
     if (this.form) {
-      this.form.addEventListener("submit", (e) => this.handleSubmit(e));
+      this.form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        void this.handleSubmit(e);
+      });
     }
 
     window
